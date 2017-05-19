@@ -1,0 +1,98 @@
+## chop_for_alignment.Praat
+##
+## This script takes a sound file and text grid with several labelled sections
+## and extracts every labelled segment into its own sound file
+##
+## Eric Doty - 2011
+## University of Pennsylvania - Linguistics Department
+##
+## Modified by Anke Dittmer
+
+
+path_in$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" # change this to your data location!
+tier_num = 1
+path_out$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" # change this to yuor data location"
+output_textgrids = 0	# do you want textgrid outputs?
+output_labfiles = 0		# do you want lab file outputs?
+output_favealign = 1	# do you want to use this for FAVE-align?
+
+# text grids
+ 	Create Strings as file list... filelist 'path_in$'*.TextGrid
+
+# select each file from the textgrid string to work on one at a time
+	number_of_files = Get number of strings
+
+ 	for t from 1 to number_of_files
+		select Strings filelist
+		current_file$ = Get string... t
+
+# open the text grid and wav files
+		Read from file... 'path_in$''current_file$'
+		object_name$ = selected$ ("TextGrid")
+		Read from file... 'path_in$''object_name$'.wav
+
+# for counting the number of extracted intervals		
+		int = 0
+
+# find the relevant intervals
+		select TextGrid 'object_name$'
+		number_of_intervals = Get number of intervals... tier_num
+
+		for y from 1 to number_of_intervals
+# find the label
+			select TextGrid 'object_name$'
+			interval_label$ = Get label of interval... tier_num y
+
+# if the interval is labeled (not null)
+			if interval_label$ <>"" and interval_label$ <>" " and interval_label$ <>"  " and interval_label$ <> "xxx"
+
+# count it
+				int = int+1
+
+# find the start and end
+				begin = Get starting point... tier_num y
+				end = Get end point... tier_num y
+
+# open the sound file and extract the utterance
+				select Sound 'object_name$'
+
+				Extract part... begin end Rectangular 1.0 no
+# save it
+
+				Write to WAV file... 'path_out$''object_name$'_'int'.wav
+				Remove
+				
+# make the new TextGrid
+				
+				if output_textgrids == 1
+					select TextGrid 'object_name$'
+					
+					Extract part... begin end Rectangular 1.0 no
+					
+					Write to text file... 'path_out$''object_name$'_'int'.TextGrid
+					Remove
+				endif
+
+# make txt in Fave-align standard
+
+				if output_favealign == 1
+					new_end = 'end' - 'begin'
+					fileappend "'path_out$''object_name$'_'int'.txt" 'object_name$''tab$''object_name$''tab$'0'tab$''new_end''tab$''interval_label$''newline$'
+				endif
+
+
+# make the lab file
+				if output_labfiles == 1
+					fileappend "'path_out$''object_name$'_'int'.lab" 'interval_label$'
+				endif
+			endif
+		endfor
+		
+# clean up
+		select Sound 'object_name$'
+		plus TextGrid 'object_name$'
+		Remove
+
+	endfor
+select Strings filelist
+Remove
