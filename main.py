@@ -6,6 +6,8 @@ from shutil import move
 
 editor = "gedit"
 dir_path = os.getcwd()
+unknown_words = []
+
 
 praatrunner = PraatRunner()
 praatrunner.chop()
@@ -24,11 +26,24 @@ for root, dir_names, file_names in os.walk(dir_path + '/data'):
 			os.system("python FAAValign.py -c data/" + file_name + "unknown.txt " + "data/" + file_name)
 
 for root, dir_names, file_names in os.walk(dir_path + '/data'):
+
 	for file_name in file_names:
 		os.stat(dir_path + "/data/" + file_name).st_size
 		if file_name[-11:] == 'unknown.txt' and os.path.getsize(dir_path + "/data/" + file_name) > 0:
-			os.system(editor + " " + dir_path + "/data/" + file_name) 
+			with open(dir_path + "/data/" + file_name) as file:
+				for line in file:
+					newline = line.strip()
+					print(newline)
+					unknown_words.append(newline)
+
+			
+	unknown_words.sort()
+	
+	with open(dir_path + '/data/unknown.txt', 'w') as file:
+		for line in unknown_words:
+			file.write(line + '\n')
+	os.system(editor + ' ' + dir_path + '/data/unknown.txt') 
 
 	for file_name in file_names:
 		if file_name[-3:] == 'wav': #and os.path.getsize(dir_path + "/data/" + file_name[:-3] + "txtunknown.txt") == 0:
-			os.system("python FAAValign.py -i data/" + file_name[:-3] + "txtunknown.txt data/" + file_name)
+			os.system("python FAAValign.py -i data/unknown.txt data/" + file_name)
