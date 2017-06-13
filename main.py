@@ -33,7 +33,6 @@ for root, dir_names, file_names in os.walk(dir_path + '/data'):
 			with open(dir_path + "/data/" + file_name) as file:
 				for line in file:
 					newline = line.strip()
-					print(newline)
 					unknown_words.append(newline)
 
 			
@@ -47,3 +46,6 @@ for root, dir_names, file_names in os.walk(dir_path + '/data'):
 	for file_name in file_names:
 		if file_name[-3:] == 'wav': #and os.path.getsize(dir_path + "/data/" + file_name[:-3] + "txtunknown.txt") == 0:
 			os.system("python FAAValign.py -i data/unknown.txt data/" + file_name)
+
+
+praatrunner.getCoG()
