@@ -3,6 +3,12 @@ tier_num = 1
 word_tier_num = 2
 path_out$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to yuor data location!
 
+
+fileappend "cog_outcome.txt" "Filename", "Participant", "Item", "Style", "Phonemesurrounding -2", "Phonemesurrounding -1", "Phoneme", "Phonemesurrounding +1", "Phonemesurrounding +2" 
+			..."Start", "Duration", "CoG",  'newline$'
+
+
+
 # text grids
  Create Strings as file list... filelist 'path_in$'*.TextGrid
 
@@ -47,36 +53,48 @@ number_of_files = Get number of strings
 		endif
 		item$ = ""
 		if labeli$ == "S" or labeli$ == "SH"
-			#if labeli$ == "S"
-			#	item$ = "s" 
-			#endif
-			#if item$ == "s" and labeliplusone$ == "T"
-			#	item$ = "st"
-			#endif
-			#if item$ == "st" and labeliplustwo$ == "R"
-			#	item$ = "str"
-			#endif
-			#if item$ == "s" and labeliplusone$ == "P"
-			#	item$ == "sp"
-			#endif
-			#if item$ == "sp" and labeliplustwo$ == "R"
-			#	item$ = "spr"
-			#endif
-			#if labeli$ == "SH"
-			#	item$ = "sh"
-			#endif
-			#if item$ == "sh" and labeliplusone$ == "T"
-			#	item$ = "sht"
-			#endif
-			#if item$ == "sht" and labeliplustwo$ == "R"
-			#	item$ = "shtr"
-			#endif
-			#if item$ == "sh" and labeliplusone$ == "P"
-			#	item$ == "shp"
-			#endif
-			#if item$ == "shp" and labeliplustwo$ == "R"
-			#	item$ = "shpr"
-			#endif
+			if labeli$ == "S"
+				item$ = "s" 
+			endif
+			if item$ == "s" and labeliplusone$ == "T"
+				item$ = "st"
+			endif
+			if item$ == "s" and labeliplusone$ == "K"
+				item$ = "sk"
+			endif
+			if item$ == "st" and labeliplustwo$ == "R"
+				item$ = "str"
+			endif
+			if item$ == "sk" and labeliplustwo$ == "R"
+				item$ = "skr"
+			endif
+			if item$ == "s" and labeliplusone$ == "P"
+				item$ == "sp"
+			endif
+			if item$ == "sp" and labeliplustwo$ == "R"
+				item$ = "spr"
+			endif
+			if labeli$ == "SH"
+				item$ = "sh"
+			endif
+			if item$ == "sh" and labeliplusone$ == "T"
+				item$ = "sht"
+			endif
+			if item$ == "sh" and labeliplusone$ == "K"
+				item$ = "shk"
+			endif
+			if item$ == "sht" and labeliplustwo$ == "R"
+				item$ = "shtr"
+			endif
+			if item$ == "shk" and labeliplustwo$ == "R"
+				item$ = "shkr"
+			endif
+			if item$ == "sh" and labeliplusone$ == "P"
+				item$ == "shp"
+			endif
+			if item$ == "shp" and labeliplustwo$ == "R"
+				item$ = "shpr"
+			endif
 
 			# word$ = get word at location of i
 			# if endtime of interval i == endtime of interval for word, then note that sfinal$ = "yes", else sfinal$ = "no"
@@ -86,8 +104,13 @@ number_of_files = Get number of strings
 
 			fixed_begin$ = fixed$(begin,3)
 			fixed_dur$ = fixed$(dur,3)
+			participant = extractNumber(object_name$, "Participant")
+			digit_length = length(string$(participant))
+			startstyle = 12 + digit_length
+			style$ = mid$(object_name$, startstyle, 4)
+			
 	
-			fileappend "cog_outcome.txt" 'object_name$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$' 
+			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$' 
 			...'fixed_begin$', 'fixed_dur$', 
 
 
