@@ -1,54 +1,65 @@
-## chop_for_alignment.Praat
+## chopper
 ##
-## This script takes a sound file and text grid with several labelled sections
+## This script takes sound files and corresponding text grids with several labelled sections
 ## and extracts every labelled segment into its own sound file
 ##
 ## Eric Doty - 2011
 ## University of Pennsylvania - Linguistics Department
 ##
-## Modified by Anke Dittmer
+## Modified by Anke Dittmer 2017
 
 
-path_in$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" # change this to your data location!
-tier_num = 1
-path_out$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" # change this to yuor data location"
-output_textgrids = 0	# do you want textgrid outputs?
-output_labfiles = 0		# do you want lab file outputs?
-output_favealign = 1	# do you want to use this for FAVE-align?
 
-# text grids
+## Set up
+path_in$ = "data/" ; change this to your data location!
+tier_num = 1	; In what tear number is the transcription that should be used for chopping?
+path_out$ = "data/" ; change this to yuor data location!
+output_textgrids = 0	; do you want textgrid outputs?
+output_labfiles = 0		; do you want lab file outputs?
+output_favealign = 1	; do you want to use this for FAVE-align?
+
+
+
+## Iterate through all files in the data location
+# find all TextGrid files in the data location and create a list
  	Create Strings as file list... filelist 'path_in$'*.TextGrid
 
 # select each file from the textgrid string to work on one at a time
 	number_of_files = Get number of strings
 
+# start the for-loop to iterate through all textgrid files
  	for t from 1 to number_of_files
 		select Strings filelist
 		current_file$ = Get string... t
 
-# open the text grid and wav files
+# open the current text grid and wav files
 		Read from file... 'path_in$''current_file$'
 		object_name$ = selected$ ("TextGrid")
 		Read from file... 'path_in$''object_name$'.wav
 
-# for counting the number of extracted intervals		
+# for counting the number of extracted intervals to name our outcoming files	
 		int = 0
 
+
+
+## Iterate through all intervals in the selected textgrid
 # find the relevant intervals
 		select TextGrid 'object_name$'
 		number_of_intervals = Get number of intervals... tier_num
 
 		for y from 1 to number_of_intervals
-# find the label
+# find the label of the interval
 			select TextGrid 'object_name$'
 			interval_label$ = Get label of interval... tier_num y
 
 # if the interval is labeled (not null)
 			if interval_label$ <>"" and interval_label$ <>" " and interval_label$ <>"  " and interval_label$ <> "xxx"
 
-# count it
+# count the label to name our file
 				int = int+1
 
+
+## Find the starting and end point of the interval and extract this time-section from the sound file
 # find the start and end
 				begin = Get starting point... tier_num y
 				end = Get end point... tier_num y
@@ -58,12 +69,13 @@ output_favealign = 1	# do you want to use this for FAVE-align?
 
 				Extract part... begin end Rectangular 1.0 no
 # save it
-
 				Write to WAV file... 'path_out$''object_name$'_'int'.wav
 				Remove
-				
-# make the new TextGrid
-				
+
+
+
+## Create a new TextGrid for the new soundfile if this was wanted (see Set up)			
+# make the new TextGrid			
 				if output_textgrids == 1
 					select TextGrid 'object_name$'
 					
@@ -73,22 +85,30 @@ output_favealign = 1	# do you want to use this for FAVE-align?
 					Remove
 				endif
 
-# make txt in Fave-align standard
 
+
+## Create a new Textfile in Fave-align standard if this was wanted (see Set up)
+# make txt in Fave-align standard
 				if output_favealign == 1
-					new_end = 'end' - 'begin'
+					new_end = 'end' - 'begin' ; In Fave-align time is relativ to the begining
 					fileappend "'path_out$''object_name$'_'int'.txt" 'object_name$''tab$''object_name$''tab$'0'tab$''new_end''tab$''interval_label$''newline$'
 				endif
 
 
+
+## Create a new lab file (used for Prosodylab-aligner) if this was wanted (see Set up)
 # make the lab file
 				if output_labfiles == 1
 					fileappend "'path_out$''object_name$'_'int'.lab" 'interval_label$'
 				endif
+
+
 			endif
 		endfor
 		
-# clean up
+
+
+## Clean up
 		select Sound 'object_name$'
 		plus TextGrid 'object_name$'
 		Remove

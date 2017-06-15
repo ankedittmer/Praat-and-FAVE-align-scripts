@@ -1,26 +1,38 @@
+##
+## This script takes in a data directory full of sound- and corresponding 
+## TextGrid files (with word-transcriptions sectiond in breath groups), cuts
+## the data in smaller pieces, so that the FAVE-aligner can align the data
+## properly and gives out a CSV-file (with header) in which all occurances of
+## /s/ and /sh/ are listed with their centre of gravity (after a preemphasis
+## of 750 HZ).
+##
+## Written by Anke Dittmer 2017
+## 
+
 import os
 from praatrunner import PraatRunner
 import subprocess
 from tempfile import mkstemp
 from shutil import move
 
-editor = "gedit"
+
+## Set up
+editor = "gedit" # Type in your editor of choice in which you want to edit missing dictionary entries
+praat = '/home/adittmer/Downloads/praat' # full path to your praat executable
+data = '/data' # name of your data-directory. If it differs from 'data' you need to change your praat scripts also
 dir_path = os.getcwd()
 unknown_words = []
 
 
-praatrunner = PraatRunner()
-praatrunner.chop()
-
-# Run the Prosodylab aligner, go through all data in the folder data and create 
-# aligned TextGrid files for every pair of samenamed .wav and .lab files
+## Chop our sound and textgrid files into smaller pieces (breath groups)
+praatrunner = PraatRunner(praat)	# start an instance of the praatrunner with the path to your praat-executable
+praatrunner.chop()  # run a script in praat to chop the data
 
 
-# Ohne einzelne Ordner
-for root, dir_names, file_names in os.walk(dir_path + '/data'):
+for root, dir_names, file_names in os.walk(dir_path + data):
  
 	for file_name in file_names:
-		if file_name.split('.')[0][-1] == 'g':
+		if not '_' in file_name:
 			os.remove('data/' + file_name)
 		if file_name[-3:] == 'txt' and (not file_name[-11:] == 'unknown.txt') and ((file_name + 'unknown.txt') not in file_names):
 			os.system("python FAAValign.py -c data/" + file_name + "unknown.txt " + "data/" + file_name)
