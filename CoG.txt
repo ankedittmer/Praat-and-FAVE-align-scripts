@@ -4,8 +4,8 @@ word_tier_num = 2
 path_out$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to yuor data location!
 
 
-fileappend "cog_outcome.txt" "Filename", "Participant", "Item", "Style", "Phonemesurrounding -2", "Phonemesurrounding -1", "Phoneme", "Phonemesurrounding +1", "Phonemesurrounding +2" 
-			..."Start", "Duration", "CoG",  'newline$'
+fileappend "cog_outcome.txt" 'Filename', 'Participant', 'Item', 'WordContext', 'Across boundary word', 'Style', 'Phonemesurrounding -2', 'Phonemesurrounding -1', 'Phoneme', 'Phonemesurrounding +1', 'Phonemesurrounding +2' 
+			...'Start', 'Duration', 'CoG',  'newline$'
 
 
 
@@ -69,7 +69,7 @@ number_of_files = Get number of strings
 				item$ = "skr"
 			endif
 			if item$ == "s" and labeliplusone$ == "P"
-				item$ == "sp"
+				item$ = "sp"
 			endif
 			if item$ == "sp" and labeliplustwo$ == "R"
 				item$ = "spr"
@@ -107,10 +107,44 @@ number_of_files = Get number of strings
 			participant = extractNumber(object_name$, "Participant")
 			digit_length = length(string$(participant))
 			startstyle = 12 + digit_length
-			style$ = mid$(object_name$, startstyle, 4)
+			endstyle = length(object_name$)-startstyle-(length(object_name$)-index(object_name$, "_"))
+			style$ = mid$(object_name$, startstyle, endstyle)
+
+			if length(item$)>1
+				end_phoneme_plusone = Get end point... tier_num i+1
+			endif
+			if length(item$)>2
+				end_phoneme_plustwo = Get end point... tier_num i+2
+			endif
+			word$ = "NaN"
+			across_boundary$ = ""
+			number_of_intervals_words = Get number of intervals... word_tier_num
+			for j from 1 to number_of_intervals_words
+				min = Get starting point... word_tier_num j
+				max = Get end point... word_tier_num j
+
+
+				if min <= begin and max >= end
+					word$ = Get label of interval... word_tier_num j
+					if j+1 <= number_of_intervals_words
+						min_after = Get starting point... word_tier_num j+1
+						max_after = Get end point... word_tier_num j+1
+
+						if length(item$)>1 and end_phoneme_plusone > min_after
+							across_boundary$ = Get label of interval... word_tier_num j+1
+						endif
+						if length(item$)>2 and end_phoneme_plustwo > min_after
+							across_boundary$ = Get label of interval... word_tier_num j+1
+						endif
+					endif
+				endif
+
+
+			endfor
+
 			
 	
-			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$' 
+			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'word$', 'across_boundary$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$' 
 			...'fixed_begin$', 'fixed_dur$', 
 
 
