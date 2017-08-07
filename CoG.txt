@@ -1,37 +1,51 @@
-path_in$ = "/home/ankedittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to your data location!
-tier_num = 1
-word_tier_num = 2
-path_out$ = "/home/ankedittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to yuor data location!
+## This script takes short wav and corresponding aligned textgrid files and gets the centre of gravity for
+## all s and sh sounds. Additional informations in the output file are the participant number, 
+## the item (str, sp, shp, etc.) the word in which the item occured, or if the item occured across bounaries two words,
+## the style-context in which the words was spoken (naming, storytelling, etc.), the phonemsurrounding from 2 phonemes before
+## to two phonemes after the s /sh occurance, the start and duration of the s /sh sound and the centre of gravity (AFTER A PREEMPHASIS!!)
+##
+## The Centre of gravity is computet after a preemphasis, so it is not comparable to other studies!
+##
+## Written by Anke Dittmer 2017
 
 
-fileappend "cog_outcome.txt" 'Filename', 'Participant', 'Item', 'WordContext', 'Across boundary word', 'Style', 'Phonemesurrounding -2', 'Phonemesurrounding -1', 'Phoneme', 'Phonemesurrounding +1', 'Phonemesurrounding +2', 
-			...'Start', 'Duration', 'CoG',  'newline$'
+# Set Up
+path_in$ = "data/" ; change this to your data location!
+tier_num = 1 ; textgrid tier number of the phoneme transcriptions
+word_tier_num = 2 ; textgrid tier number of the word transcriptions
+path_out$ = "data/" ; change this to your data location!
+
+
+# Preparation of the result file, write the headings of the columns in a file called cog_outcome.txt
+fileappend "cog_outcome.txt" 'Filename', 'Participant', 'Item', 'WordContext', 'Across boundary word', 'Style', 
+			...'Phonemesurrounding -2', 'Phonemesurrounding -1', 'Phoneme', 'Phonemesurrounding +1', 
+			...'Phonemesurrounding +2', 'Start', 'Duration', 'CoG',  'newline$'
 
 
 
-# text grids
+# make a list of all text grids in the data directory
  Create Strings as file list... filelist 'path_in$'*.TextGrid
 
 # select each file from the textgrid string to work on one at a time
 number_of_files = Get number of strings
-
  for t from 1 to number_of_files
 	select Strings filelist
 	current_file$ = Get string... t
 
-# open the text grid and wav files
+# open the text grid and corresponding wav files
 	Read from file... 'path_in$''current_file$'
 	object_name$ = selected$ ("TextGrid")
 	Read from file... 'path_in$''object_name$'.wav
 
 # for counting the number of extracted intervals		
-		int = 0
+	int = 0
 
-# find the relevant intervals
+# find the relevant phoneme intervals
 	select TextGrid 'object_name$'
 	number_of_intervals = Get number of intervals... tier_num
 
-
+	# go through all intervals and get the labels of the interval and the intervals from two phonemes before
+	# the current one to two phonemes after the current one,
 	for i from 1 to number_of_intervals
 		select TextGrid 'object_name$'
 		labeliplusone$ = "0"
@@ -39,7 +53,7 @@ number_of_files = Get number of strings
 		labeliminusone$ = "0"
 		labeliminustwo$ = "0"
 		labeli$ = Get label of interval... tier_num i
-		if (number_of_intervals - i) > 0
+		if (number_of_intervals - i) > 0 ; be sure the next interval is in this textgrid and the textgrid has not ended
 			labeliplusone$ = Get label of interval... tier_num i+1
 		endif
 		if (number_of_intervals - (i+1)) > 0
@@ -51,6 +65,8 @@ number_of_files = Get number of strings
 		if i > 3
 			labeliminustwo$ = Get label of interval... tier_num i-2
 		endif
+
+		# if the label of the current interval is a s or sh sound, change the item accordingly
 		item$ = ""
 		if labeli$ == "S" or labeli$ == "SH"
 			if labeli$ == "S"
@@ -96,20 +112,21 @@ number_of_files = Get number of strings
 				item$ = "shpr"
 			endif
 
-			# word$ = get word at location of i
-			# if endtime of interval i == endtime of interval for word, then note that sfinal$ = "yes", else sfinal$ = "no"
+			# get the begin, end and duration of the interval (if the phoneme is an s or sh) and round it to 3 decimal digits
 			begin = Get starting point... tier_num i
 			end = Get end point... tier_num i
 			dur = end-begin
-
 			fixed_begin$ = fixed$(begin,3)
 			fixed_dur$ = fixed$(dur,3)
+
+			# get the Participant number and the speaking style out of the file-name
 			participant = extractNumber(object_name$, "Participant")
 			digit_length = length(string$(participant))
 			startstyle = 12 + digit_length
 			endstyle = length(object_name$)-startstyle-(length(object_name$)-index(object_name$, "_"))
 			style$ = mid$(object_name$, startstyle, endstyle)
 
+			# get the word where the item occures, or words if the item occured accross word-boundaries
 			if length(item$)>1
 				end_phoneme_plusone = Get end point... tier_num i+1
 			endif
@@ -119,11 +136,9 @@ number_of_files = Get number of strings
 			word$ = "NaN"
 			across_boundary$ = ""
 			number_of_intervals_words = Get number of intervals... word_tier_num
-			for j from 1 to number_of_intervals_words
+			for j from 1 to number_of_intervals_words ; go through all word intervals and see if the current phoneme interval lies in it
 				min = Get starting point... word_tier_num j
 				max = Get end point... word_tier_num j
-
-
 				if min <= begin and max >= end
 					word$ = Get label of interval... word_tier_num j
 					if j+1 <= number_of_intervals_words
@@ -138,28 +153,17 @@ number_of_files = Get number of strings
 						endif
 					endif
 				endif
-
-
 			endfor
 
 			
-	
-			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'word$', 'across_boundary$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$', 
-			...'fixed_begin$', 'fixed_dur$', 
-
-
-
-			# Measure time points one quarter, mid, three quarters.
-	
-	
+			# Measure the centre of gravity in the middle of the s or sh sound
 			measure = begin + (dur /2)
-	
-
 
 			select Sound 'object_name$'
+
 			# windowing
-			beginS = measure - 0.05
-			endS = measure + 0.05
+			beginS = measure - 0.0125
+			endS = measure + 0.0125
 			Extract part... 'beginS' 'endS' Hamming 1 no
 			snd = selected ("Sound")
 			# preemphasis filter (Nissen, 2003)
@@ -170,16 +174,22 @@ number_of_files = Get number of strings
 			# extract spectral moments
 			cog = Get centre of gravity... 2
 
+			# round the centre of gravity number to three decimal points
 			fixed_cog$ = fixed$(cog,3)
-			fileappend "cog_outcome.txt" 'fixed_cog$', 'newline$'
 
+			# save all the information in the result textfile
+			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'word$', 'across_boundary$', 
+					...'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 
+					...'labeliplustwo$', 'fixed_begin$', 'fixed_dur$', 'fixed_cog$', 'newline$'
+
+			# remove the selections
 			plus snd
 			plus sndPre
 			Remove
 		endif
 	endfor
 
-#Clean up
+	# Clean up
 	select Sound 'object_name$'
 	plus TextGrid 'object_name$'
 	Remove
