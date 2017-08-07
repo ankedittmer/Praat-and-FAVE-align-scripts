@@ -1,10 +1,10 @@
-path_in$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to your data location!
+path_in$ = "/home/ankedittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to your data location!
 tier_num = 1
 word_tier_num = 2
-path_out$ = "/home/adittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to yuor data location!
+path_out$ = "/home/ankedittmer/Downloads/htk/FAVE/FAVE-align/data/" ; change this to yuor data location!
 
 
-fileappend "cog_outcome.txt" 'Filename', 'Participant', 'Item', 'WordContext', 'Across boundary word', 'Style', 'Phonemesurrounding -2', 'Phonemesurrounding -1', 'Phoneme', 'Phonemesurrounding +1', 'Phonemesurrounding +2' 
+fileappend "cog_outcome.txt" 'Filename', 'Participant', 'Item', 'WordContext', 'Across boundary word', 'Style', 'Phonemesurrounding -2', 'Phonemesurrounding -1', 'Phoneme', 'Phonemesurrounding +1', 'Phonemesurrounding +2', 
 			...'Start', 'Duration', 'CoG',  'newline$'
 
 
@@ -144,7 +144,7 @@ number_of_files = Get number of strings
 
 			
 	
-			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'word$', 'across_boundary$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$' 
+			fileappend "cog_outcome.txt" 'object_name$', 'participant', 'item$', 'word$', 'across_boundary$', 'style$', 'labeliminustwo$', 'labeliminusone$', 'labeli$', 'labeliplusone$', 'labeliplustwo$', 
 			...'fixed_begin$', 'fixed_dur$', 
 
 
