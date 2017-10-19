@@ -45,7 +45,7 @@ praatrunner.chop()  # run a script in praat to chop the data
 
 # Check for out-of-dictionary-words in the transcribtions
 for root, dir_names, file_names in os.walk(dir_path + data): # go through all files in the data directory
- 
+	print(file_names) 
 	for file_name in file_names: # in the data directory are the original files as well as the chopped pieces, so:
 		if not '_' in file_name: # delete the original data, aligning those wouldn't work they are to long
 			os.remove('data/' + file_name)
@@ -57,7 +57,7 @@ for root, dir_names, file_names in os.walk(dir_path + data): # go through all fi
 
 # Write all unknown words in one file and open said file so that unknown words can be transcribed
 for root, dir_names, file_names in os.walk(dir_path + '/data'): # go through all files in the data directory
-
+	print(file_names)
 	for file_name in file_names: # for all files in there
 		# if the file is a file with out-of-dictionary words and is not empty
 		if file_name[-11:] == 'unknown.txt' and os.path.getsize(dir_path + "/data/" + file_name) > 0:
