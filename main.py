@@ -25,7 +25,7 @@ dir_path = os.getcwd()
 unknown_words = [] # in here should all out-of-dictionary-words be saved
 
 
-# A function to check the file with out of dictionary words, it it matches the pattern requirements for FAVE
+# A function to check the file with out of dictionary words, if it matches the pattern requirements for FAVE
 def checkUnknownFile(path):
 	with open(path) as file:
 		for line in file: # go through the out-of-dictionary-words written in this file
@@ -37,64 +37,82 @@ def checkUnknownFile(path):
 				return False
 		return correct
 
-
-## Chop our sound and textgrid files into smaller pieces (breath groups)
-praatrunner = PraatRunner(praat)	# start an instance of the praatrunner with the path to your praat-executable
-praatrunner.chop()  # run a script in praat to chop the data
-
-
-# Check for out-of-dictionary-words in the transcribtions
-for root, dir_names, file_names in os.walk(dir_path + data): # go through all files in the data directory
-	print(file_names) 
-	for file_name in file_names: # in the data directory are the original files as well as the chopped pieces, so:
-		if not '_' in file_name: # delete the original data, aligning those wouldn't work they are to long
-			os.remove('data/' + file_name)
-		# take all text files that are not already the outcome of out-of-dictionary-checks or were already checked
-		if file_name[-3:] == 'txt' and (not file_name[-11:] == 'unknown.txt') and ((file_name + 'unknown.txt') not in file_names): 
-			# and check them for out-of-dictionary-words with a Fave-align command. Write the missing words in a file called like the
-			# one that is checked but with an unknown.txt added 
-			os.system("python FAAValign.py -c data/" + file_name + "unknown.txt " + "data/" + file_name)
-
-# Write all unknown words in one file and open said file so that unknown words can be transcribed
-for root, dir_names, file_names in os.walk(dir_path + '/data'): # go through all files in the data directory
-	print(file_names)
-	for file_name in file_names: # for all files in there
-		# if the file is a file with out-of-dictionary words and is not empty
-		if file_name[-11:] == 'unknown.txt' and os.path.getsize(dir_path + "/data/" + file_name) > 0:
-			with open(dir_path + "/data/" + file_name) as file:
-				for line in file: # go through the out-of-dictionary-words written in this file
-					newline = line.strip()
-					unknown_words.append(newline) # and save them in a python list
-
-			
-	unknown_words.sort() # sort all out-of-dictionary-words alphabetically
 	
-	# write all out-of-dictionary-words in a file called unknown.txt
-	with open(dir_path + '/data/unknown.txt', 'w') as file:
-		for line in unknown_words:
-			file.write(line + '\n')
-	# open the file with the out-of-dictionary-words in an editor and wait till it is closed (and the words are hopefully transcribed by hand)
-	os.system(editor + ' ' + dir_path + '/data/unknown.txt')
+## Check if the data in the data directory seems ok (every .wav has a matching .TextGrid, 
+## the other way round and nothing else is in the data directory
+data_ok = True
+for root, dir_names, file_names in os.walk(dir_path + data): # go through all files in the data directory 
+	for file_name in file_names: # 
+		if file_name[-4:] == '.wav':
+			if (file_name[:-4] + '.TextGrid') not in file_names:
+				print("Please check your data, ", file_name, " doesn't have a matching .TextGrid file")
+				data_ok = False
+		elif file_name[-9:] == '.TextGrid':
+			if (file_name[:-9] + '.wav') not in file_names:
+				print("Please check your data, ", file_name, " doesn't have a matching .wav file")
+				data_ok = False
+		else:
+			print("Please check your data, ", file_name, "is not a .wav or a .TextGrid file")
+			data_ok = False
 
-	# check if the file with out of dictionary words and hand written transcriptions matches the requirements of FAVE, otherwise open it again
-	# so that it can be changed
-	check = False
-	if os.path.getsize(dir_path + '/data/unknown.txt') > 0: # only check if the file is not empty
-		while(check == False):
+# only proceed in this script, if the data is ok
+if data_ok == True:
 
-			if not checkUnknownFile(dir_path + '/data/unknown.txt'): # check if file matches the pattern requirements
-				print("Please check again your transcription, leave no empty lines and be sure to seperate word and transcription with one tab")
-				os.system(editor + ' ' + dir_path + '/data/unknown.txt') # open the file again
-			else:
-				check = True
+	## Chop our sound and textgrid files into smaller pieces (breath groups)
+	praatrunner = PraatRunner(praat)	# start an instance of the praatrunner with the path to your praat-executable
+	praatrunner.chop()  # run a script in praat to chop the data
 
-	# align all wav files with their transcriptions and use the now transcribed out-of-dictionary-words
-	for file_name in file_names:
-		if file_name[-3:] == 'wav': # if the file is a sound file do the aligning, if the textGrid file is named the same as the 
-									# corresponding wav, Fave-align finds it itself 
-			os.system("python FAAValign.py -i data/unknown.txt data/" + file_name)
 
-# Run the actual centre of gravity script
-praatrunner.getCoG() # run a script in praat to get the centre of gravity of s / sh sounds and informations about their surroundings
+	# Check for out-of-dictionary-words in the transcribtions
+	for root, dir_names, file_names in os.walk(dir_path + data): # go through all files in the data directory 
+		for file_name in file_names: # in the data directory are the original files as well as the chopped pieces, so:
+			if not '_' in file_name: # delete the original data, aligning those wouldn't work they are to long
+				os.remove('data/' + file_name)
+			# take all text files that are not already the outcome of out-of-dictionary-checks or were already checked
+			if file_name[-3:] == 'txt' and (not file_name[-11:] == 'unknown.txt') and ((file_name + 'unknown.txt') not in file_names): 
+				# and check them for out-of-dictionary-words with a Fave-align command. Write the missing words in a file called like the
+				# one that is checked but with an unknown.txt added 
+				os.system("python FAAValign.py -c data/" + file_name + "unknown.txt " + "data/" + file_name)
+
+	# Write all unknown words in one file and open said file so that unknown words can be transcribed
+	for root, dir_names, file_names in os.walk(dir_path + '/data'): # go through all files in the data directory
+		for file_name in file_names: # for all files in there
+			# if the file is a file with out-of-dictionary words and is not empty
+			if file_name[-11:] == 'unknown.txt' and os.path.getsize(dir_path + "/data/" + file_name) > 0:
+				with open(dir_path + "/data/" + file_name) as file:
+					for line in file: # go through the out-of-dictionary-words written in this file
+						newline = line.strip()
+						unknown_words.append(newline) # and save them in a python list
+
+
+		unknown_words.sort() # sort all out-of-dictionary-words alphabetically
+
+		# write all out-of-dictionary-words in a file called unknown.txt
+		with open(dir_path + '/data/unknown.txt', 'w') as file:
+			for line in unknown_words:
+				file.write(line + '\n')
+		# open the file with the out-of-dictionary-words in an editor and wait till it is closed (and the words are hopefully transcribed by hand)
+		os.system(editor + ' ' + dir_path + '/data/unknown.txt')
+
+		# check if the file with out of dictionary words and hand written transcriptions matches the requirements of FAVE, otherwise open it again
+		# so that it can be changed
+		check = False
+		if os.path.getsize(dir_path + '/data/unknown.txt') > 0: # only check if the file is not empty
+			while(check == False):
+
+				if not checkUnknownFile(dir_path + '/data/unknown.txt'): # check if file matches the pattern requirements
+					print("Please check again your transcription, leave no empty lines and be sure to seperate word and transcription with one tab")
+					os.system(editor + ' ' + dir_path + '/data/unknown.txt') # open the file again
+				else:
+					check = True
+
+		# align all wav files with their transcriptions and use the now transcribed out-of-dictionary-words
+		for file_name in file_names:
+			if file_name[-3:] == 'wav': # if the file is a sound file do the aligning, if the textGrid file is named the same as the 
+										# corresponding wav, Fave-align finds it itself 
+				os.system("python FAAValign.py -i data/unknown.txt data/" + file_name)
+
+	# Run the actual centre of gravity script
+	praatrunner.getCoG() # run a script in praat to get the centre of gravity of s / sh sounds and informations about their surroundings
 
 
