@@ -38,22 +38,19 @@ def checkUnknownFile(path):
 		return correct
 
 	
-## Check if the data in the data directory seems ok (every .wav has a matching .TextGrid, 
-## the other way round and nothing else is in the data directory
+## Check if the data in the data directory seems ok (every .wav has a matching .TextGrid 
+## and the other way round)
 data_ok = True
 for root, dir_names, file_names in os.walk(dir_path + data): # go through all files in the data directory 
 	for file_name in file_names: # 
 		if file_name[-4:] == '.wav':
 			if (file_name[:-4] + '.TextGrid') not in file_names:
-				print("Please check your data, ", file_name, " doesn't have a matching .TextGrid file")
+				print 'Please check your data, ', file_name, ' doesn\'t have a matching .TextGrid file'
 				data_ok = False
 		elif file_name[-9:] == '.TextGrid':
 			if (file_name[:-9] + '.wav') not in file_names:
-				print("Please check your data, ", file_name, " doesn't have a matching .wav file")
+				print 'Please check your data, ', file_name, ' doesn\'t have a matching .wav file'
 				data_ok = False
-		else:
-			print("Please check your data, ", file_name, "is not a .wav or a .TextGrid file")
-			data_ok = False
 
 # only proceed in this script, if the data is ok
 if data_ok == True:
