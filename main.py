@@ -79,6 +79,14 @@ if data_ok == True:
 				with open(dir_path + "/data/" + file_name) as file:
 					for line in file: # go through the out-of-dictionary-words written in this file
 						newline = line.strip()
+						if Null in newline:
+							print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+							for i in range(10):
+								print '!'
+							print '!               Check the transcription of ' + file_name[:-11]
+							for i in range(10):
+								print '!'
+							print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 						unknown_words.append(newline) # and save them in a python list
 
 
